@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:thoughtflow/Screens/homeScreen.dart';
 import 'package:thoughtflow/Screens/loginScreen.dart';
+import 'package:thoughtflow/Screens/signupScreen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -7,17 +9,21 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
+      title: 'ThoughtFlow',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const Loginscreen(),
+      initialRoute: '/login',
+      routes: {
+        '/login': (context) => const Loginscreen(),
+        '/home': (context) => const Homescreen(),
+        '/Signup': (context) => const Signupscreen(),
+      },
     );
   }
 }
