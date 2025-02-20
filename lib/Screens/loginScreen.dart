@@ -12,7 +12,7 @@ class Loginscreen extends StatefulWidget {
 }
 
 class _LoginscreenState extends State<Loginscreen> {
-  final String url = "http://192.168.137.35:5000/login";
+  final String url = "http://192.168.137.180:5000/login";
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
@@ -30,10 +30,12 @@ class _LoginscreenState extends State<Loginscreen> {
       if (response.statusCode == 200) {
         Navigator.pushNamed(context, "/home");
       } else {
-        print("Login Failed");
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const Text("Login Failed") as SnackBar);
       }
     } catch (e) {
-      print("Error: $e");
+      String s = e.toString();
+      ScaffoldMessenger.of(context).showSnackBar(Text(s) as SnackBar);
     }
   }
 

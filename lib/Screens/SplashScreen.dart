@@ -43,14 +43,14 @@ class _SplashscreenState extends State<Splashscreen> {
             'Thought Flow',
             style: TextStyle(
               letterSpacing: 0.6,
-              color: Colors.white,
+              color: Colors.black,
               fontSize: 30,
               fontFamily: 'Roboto',
             ),
           ),
           SizedBox(height: height * 0.05),
           const SpinKitChasingDots(
-            color: Colors.black,
+            color: Colors.red,
             size: 50.0,
           ),
         ],

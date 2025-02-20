@@ -11,7 +11,7 @@ class Signupscreen extends StatefulWidget {
 }
 
 class _SignupscreenState extends State<Signupscreen> {
-  final String url = "http://192.168.137.35:5000/signup";
+  final String url = "http://192.168.137.180:5000/signup";
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmpasswordController = TextEditingController();
@@ -31,10 +31,12 @@ class _SignupscreenState extends State<Signupscreen> {
       if (response.statusCode == 200) {
         Navigator.pushNamed(context, "/login");
       } else {
-        print("Signup Failed");
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const Text("Signup failed") as SnackBar);
       }
     } catch (e) {
-      print("Error: $e");
+      String s = e.toString();
+      ScaffoldMessenger.of(context).showSnackBar(Text(s) as SnackBar);
     }
   }
 
@@ -144,8 +146,6 @@ class _SignupscreenState extends State<Signupscreen> {
                             _passwordController.text) {
                           _signup();
                         } else {
-                          print("1" + _confirmpasswordController.text);
-                          print("2" + _passwordController.text);
                           ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                   content: Text("Password doesn't match")));
