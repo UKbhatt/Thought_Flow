@@ -1,6 +1,7 @@
 import 'dart:ui';
-
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class Signupscreen extends StatefulWidget {
   const Signupscreen({super.key});
@@ -10,10 +11,32 @@ class Signupscreen extends StatefulWidget {
 }
 
 class _SignupscreenState extends State<Signupscreen> {
+  final String url = "http://192.168.137.35:5000/signup";
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmpasswordController = TextEditingController();
   final _usernameController = TextEditingController();
+
+  Future<void> _signup() async {
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "email": _emailController.text,
+          "password": _passwordController.text
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        Navigator.pushNamed(context, "/login");
+      } else {
+        print("Signup Failed");
+      }
+    } catch (e) {
+      print("Error: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -117,9 +140,16 @@ class _SignupscreenState extends State<Signupscreen> {
                     const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () {
-
-                        // logic of singup------------------------------
-                        Navigator.popAndPushNamed(context, '/login');
+                        if (_confirmpasswordController.text ==
+                            _passwordController.text) {
+                          _signup();
+                        } else {
+                          print("1" + _confirmpasswordController.text);
+                          print("2" + _passwordController.text);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text("Password doesn't match")));
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue[300],

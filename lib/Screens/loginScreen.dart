@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'dart:ui'; // For Blur Effect
+import 'dart:ui';
+import 'package:http/http.dart' as http;
 
 class Loginscreen extends StatefulWidget {
   const Loginscreen({super.key});
@@ -10,8 +12,30 @@ class Loginscreen extends StatefulWidget {
 }
 
 class _LoginscreenState extends State<Loginscreen> {
+  final String url = "http://192.168.137.35:5000/login";
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
+  Future<void> _login() async {
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "email": _emailController.text,
+          "password": _passwordController.text
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        Navigator.pushNamed(context, "/home");
+      } else {
+        print("Login Failed");
+      }
+    } catch (e) {
+      print("Error: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +102,7 @@ class _LoginscreenState extends State<Loginscreen> {
                       ),
                       const SizedBox(height: 20),
                       ElevatedButton(
-                        onPressed: () {},
+                        onPressed: _login,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue[300],
                           foregroundColor: Colors.black,
@@ -100,18 +124,12 @@ class _LoginscreenState extends State<Loginscreen> {
                               ),
                               recognizer: TapGestureRecognizer()
                                 ..onTap = () {
-                                  Navigator.pushNamed(context, '/Signup');
+                                  Navigator.pushNamed(context, '/signup');
                                 },
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      ElevatedButton(
-                          onPressed: () {
-                            Navigator.popAndPushNamed(context, '/home');
-                          },
-                          child: const Text("Home")),
                     ],
                   ),
                 ),
