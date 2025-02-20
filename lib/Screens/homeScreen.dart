@@ -15,14 +15,17 @@ class _HomescreenState extends State<Homescreen> {
         centerTitle: true,
         title: const Text("ThoughFlow"),
         actions: [
-          GestureDetector(onTap: () {}, child: const Icon(Icons.person)),
+          Padding(
+            padding: const EdgeInsets.only(right: 10.0),
+            child:
+                GestureDetector(onTap: () {}, child: const Icon(Icons.person)),
+          ),
         ],
       ),
       body: Container(),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          
-        },
+        onPressed: () =>
+          Navigator.pushNamed(context, "/post"),
         backgroundColor: Colors.blue.shade300,
         child: const Icon(Icons.add, color: Colors.white),
       ),

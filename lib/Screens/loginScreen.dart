@@ -3,6 +3,9 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:thoughtflow/provider/provider.dart';
 
 class Loginscreen extends StatefulWidget {
   const Loginscreen({super.key});
@@ -12,7 +15,7 @@ class Loginscreen extends StatefulWidget {
 }
 
 class _LoginscreenState extends State<Loginscreen> {
-  final String url = "http://192.168.137.180:5000/login";
+  final String url = "http://192.168.137.35:5000/login";
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
@@ -28,14 +31,27 @@ class _LoginscreenState extends State<Loginscreen> {
       );
 
       if (response.statusCode == 200) {
-        Navigator.pushNamed(context, "/home");
-      } else {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const Text("Login Failed") as SnackBar);
+        final responseData = jsonDecode(response.body);
+        final String? userId = responseData['user']?['id'];
+
+        final sessionData = responseData['session'];
+        final Session? session =
+            sessionData != null ? Session.fromJson(sessionData) : null;
+
+        if (userId != null) {
+          Provider.of<UserProvider>(context, listen: false)
+              .setUserSession(userId, session);
+
+          Navigator.pushNamed(context, "/home");
+        }
       }
     } catch (e) {
-      String s = e.toString();
-      ScaffoldMessenger.of(context).showSnackBar(Text(s) as SnackBar);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Login Error: $e"),
+          duration: const Duration(seconds: 2),
+        ),
+      );
     }
   }
 

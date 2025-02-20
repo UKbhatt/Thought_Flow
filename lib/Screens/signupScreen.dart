@@ -11,7 +11,7 @@ class Signupscreen extends StatefulWidget {
 }
 
 class _SignupscreenState extends State<Signupscreen> {
-  final String url = "http://192.168.137.180:5000/signup";
+  final String url = "http://192.168.137.35:5000/signup";
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmpasswordController = TextEditingController();
@@ -24,7 +24,8 @@ class _SignupscreenState extends State<Signupscreen> {
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "email": _emailController.text,
-          "password": _passwordController.text
+          "password": _passwordController.text,
+          "Display_name": _usernameController.text,
         }),
       );
 
