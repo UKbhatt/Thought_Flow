@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class Signupscreen extends StatefulWidget {
   const Signupscreen({super.key});
@@ -11,7 +12,7 @@ class Signupscreen extends StatefulWidget {
 }
 
 class _SignupscreenState extends State<Signupscreen> {
-  final String url = "http://192.168.137.35:5000/signup";
+  final String url = "${dotenv.env['Url']}/signup";
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmpasswordController = TextEditingController();

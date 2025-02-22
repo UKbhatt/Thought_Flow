@@ -1,11 +1,12 @@
 import 'dart:convert';
+import 'dart:ui';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'dart:ui';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:thoughtflow/provider/provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class Loginscreen extends StatefulWidget {
   const Loginscreen({super.key});
@@ -15,7 +16,7 @@ class Loginscreen extends StatefulWidget {
 }
 
 class _LoginscreenState extends State<Loginscreen> {
-  final String url = "http://192.168.137.35:5000/login";
+  final String url = "${dotenv.env['Url']}/login";
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
@@ -41,7 +42,7 @@ class _LoginscreenState extends State<Loginscreen> {
         if (userId != null) {
           Provider.of<UserProvider>(context, listen: false)
               .setUserSession(userId, session);
-
+              
           Navigator.pushNamed(context, "/home");
         }
       }
