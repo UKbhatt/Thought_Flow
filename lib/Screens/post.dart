@@ -37,9 +37,10 @@ class _PostState extends State<Post> {
     }
   }
 
+  final String url = "${dotenv.env['Url']}/post/upload";
+
   Future<void> _upload() async {
     final userid = Provider.of<UserProvider>(context, listen: false).userId;
-    final String url = "${dotenv.env['Url']}/post/upload";
 
     if (_image == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -54,6 +55,7 @@ class _PostState extends State<Post> {
       );
       return;
     }
+
     try {
       var request = http.MultipartRequest("POST", Uri.parse(url));
 
@@ -73,17 +75,18 @@ class _PostState extends State<Post> {
       request.fields['visible'] = "public";
 
       var response = await request.send();
+
       var responseBody = await response.stream.bytesToString();
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print("✅ Post uploaded successfully: $responseBody");
+        // print("✅ Post uploaded successfully: $responseBody");
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Post uploaded successfully")),
         );
         Navigator.pushNamed(context, "/home");
       } else {
-        print("❌ Failed to upload. Status: ${response.statusCode}");
-        print("Response Body: $responseBody");
+        // print(" Failed to upload. Status: ${response.statusCode}");
+        // print("Response Body: $responseBody");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Failed to upload: $responseBody")),
         );
@@ -92,7 +95,7 @@ class _PostState extends State<Post> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: $e")),
       );
-      print("❌ Upload Error: $e");
+      // print("Upload Error: $e");
     }
   }
 
