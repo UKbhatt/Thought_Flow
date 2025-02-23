@@ -5,7 +5,6 @@ class Modelpost {
   final String imageUrl;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final int likes;
   final String visibility;
   final String title;
   final String displayName;
@@ -17,7 +16,6 @@ class Modelpost {
     required this.imageUrl,
     required this.createdAt,
     required this.updatedAt,
-    required this.likes,
     required this.visibility,
     required this.title,
     required this.displayName,
@@ -31,7 +29,6 @@ class Modelpost {
       imageUrl: json['image_url'] ?? '',
       createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(json['updated_at'] ?? '') ?? DateTime.now(),
-      likes: json['likes'] ?? 0,
       visibility: json['visibility'] ?? 'public',
       title: json['title'] ?? '',
       displayName:

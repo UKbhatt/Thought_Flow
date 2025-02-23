@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
-import '../component/postModel.dart'; // Ensure this file name is correct
+import '../component/postModel.dart';
 
 class Homescreen extends StatefulWidget {
   const Homescreen({super.key});
@@ -12,7 +12,8 @@ class Homescreen extends StatefulWidget {
 }
 
 class _HomescreenState extends State<Homescreen> {
-  final String url = '${dotenv.env['Url']}/post/getPosts';
+  bool isliked = false;
+  final String Base_url = '${dotenv.env['Url']}';
 
   late Future<List<Modelpost>> postsFuture;
 
@@ -22,7 +23,58 @@ class _HomescreenState extends State<Homescreen> {
     postsFuture = _getPosts();
   }
 
+  Future<int> _liked(String postId) async {
+    final String url = '$Base_url/post/liked';
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"post_id": postId}),
+      );
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        print(responseData);
+        return responseData['count'] ?? -1;
+      } else {
+        return -5;
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("ErroR $e"),
+        duration: const Duration(seconds: 3),
+      ));
+      return -6;
+    }
+  }
+
+  Future<int> _like(String postId, String userId) async {
+    final String url = '$Base_url/post/like';
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"post_id": postId, "user_id": userId}),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        return responseData['count'] ?? -2;
+      } else {
+        return -3;
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("ErroR $error"),
+        duration: const Duration(seconds: 3),
+      ));
+      return -4;
+    }
+  }
+
   Future<List<Modelpost>> _getPosts() async {
+    final String url = '$Base_url/post/getPosts';
     try {
       final response = await http.get(Uri.parse(url));
 
@@ -40,7 +92,10 @@ class _HomescreenState extends State<Homescreen> {
         throw Exception('Error fetching posts: ${response.statusCode}');
       }
     } catch (e) {
-      print("Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Error Post fetching : $e"),
+        duration: const Duration(seconds: 3),
+      ));
       throw Exception('Failed to load posts');
     }
   }
@@ -76,7 +131,6 @@ class _HomescreenState extends State<Homescreen> {
             itemCount: posts.length,
             itemBuilder: (context, index) {
               final post = posts[index];
-
               return Card(
                 margin: const EdgeInsets.all(16.0),
                 child: Column(
@@ -111,9 +165,34 @@ class _HomescreenState extends State<Homescreen> {
                           Text(post.content,
                               style: const TextStyle(fontSize: 18)),
                           const SizedBox(height: 10),
-                          Text("Likes: ${post.likes}",
-                              style: const TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.bold)),
+                          Row(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  isliked = !isliked;
+                                  _like(post.id, post.authorId);
+                                },
+                                child: Icon(
+                                  isliked
+                                      ? Icons.thumb_up_alt_rounded
+                                      : Icons.thumb_up_off_alt,
+                                ),
+                              ),
+                              FutureBuilder<int>(
+                                future: _liked(post.id),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const Text("...");
+                                  } else if (snapshot.hasError) {
+                                    return const Text("Error");
+                                  } else {
+                                    return Text(snapshot.data.toString());
+                                  }
+                                },
+                              ),
+                            ],
+                          )
                         ],
                       ),
                     ),
