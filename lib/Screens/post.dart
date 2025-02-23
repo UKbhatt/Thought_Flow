@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -78,7 +77,7 @@ class _PostState extends State<Post> {
 
       var responseBody = await response.stream.bytesToString();
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
+      if (response.statusCode == 201) {
         // print("✅ Post uploaded successfully: $responseBody");
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Post uploaded successfully")),
