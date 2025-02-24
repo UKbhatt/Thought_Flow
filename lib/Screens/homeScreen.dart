@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'package:thoughtflow/provider/provider.dart';
 import '../component/postModel.dart';
 
 class Homescreen extends StatefulWidget {
@@ -12,78 +14,30 @@ class Homescreen extends StatefulWidget {
 }
 
 class _HomescreenState extends State<Homescreen> {
-  bool isliked = false;
-  final String Base_url = '${dotenv.env['Url']}';
+  final String baseUrl = dotenv.env['Url']!;
+  late Future<List<ModelPost>> postsFuture;
+  late final UserProvider UserId;
+  late String userId;
 
-  late Future<List<Modelpost>> postsFuture;
 
   @override
   void initState() {
     super.initState();
+    userId = Provider.of<UserProvider>(context, listen: false) as String;
     postsFuture = _getPosts();
   }
 
-  Future<int> _liked(String postId) async {
-    final String url = '$Base_url/post/liked';
+  Future<List<ModelPost>> _getPosts() async {
+    final String url = '$baseUrl/post/getPosts';
 
-    try {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"post_id": postId}),
-      );
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = json.decode(response.body);
-        print(responseData);
-        return responseData['count'] ?? -1;
-      } else {
-        return -5;
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("ErroR $e"),
-        duration: const Duration(seconds: 3),
-      ));
-      return -6;
-    }
-  }
-
-  Future<int> _like(String postId, String userId) async {
-    final String url = '$Base_url/post/like';
-
-    try {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"post_id": postId, "user_id": userId}),
-      );
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = json.decode(response.body);
-        return responseData['count'] ?? -2;
-      } else {
-        return -3;
-      }
-    } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("ErroR $error"),
-        duration: const Duration(seconds: 3),
-      ));
-      return -4;
-    }
-  }
-
-  Future<List<Modelpost>> _getPosts() async {
-    final String url = '$Base_url/post/getPosts';
     try {
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
         final res = jsonDecode(response.body);
-
         if (res['data'] is List) {
           return (res['data'] as List)
-              .map((json) => Modelpost.fromJson(json))
+              .map((json) => ModelPost.fromJson(json))
               .toList();
         } else {
           throw Exception("Invalid response format: Expected List");
@@ -92,11 +46,29 @@ class _HomescreenState extends State<Homescreen> {
         throw Exception('Error fetching posts: ${response.statusCode}');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Error Post fetching : $e"),
-        duration: const Duration(seconds: 3),
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error fetching posts: $e")),
+      );
       throw Exception('Failed to load posts');
+    }
+  }
+
+  Future<void> _toggleLike(String postId) async {
+    final String url = '$baseUrl/post/like';
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"post_id": postId, "user_id": userId}),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception("Failed to like/unlike post");
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
     }
   }
 
@@ -114,7 +86,7 @@ class _HomescreenState extends State<Homescreen> {
           ),
         ],
       ),
-      body: FutureBuilder<List<Modelpost>>(
+      body: FutureBuilder<List<ModelPost>>(
         future: postsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -125,7 +97,7 @@ class _HomescreenState extends State<Homescreen> {
             return const Center(child: Text("No posts found"));
           }
 
-          List<Modelpost> posts = snapshot.data!;
+          List<ModelPost> posts = snapshot.data!;
 
           return ListView.builder(
             itemCount: posts.length,
@@ -136,6 +108,7 @@ class _HomescreenState extends State<Homescreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Image
                     Container(
                       width: double.infinity,
                       height: 200,
@@ -151,48 +124,47 @@ class _HomescreenState extends State<Homescreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // Post Title
                           Text(
                             post.title,
                             style: const TextStyle(
                                 fontSize: 22, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 5),
+
+                          // Uploaded By
                           Text(
                             "Uploaded By: ${post.displayName.isNotEmpty ? post.displayName : 'Unknown'}",
                             style: const TextStyle(color: Colors.grey),
                           ),
                           const SizedBox(height: 10),
+
+                          // Post Content
                           Text(post.content,
                               style: const TextStyle(fontSize: 18)),
                           const SizedBox(height: 10),
+
+                          // Like Button and Count
                           Row(
                             children: [
                               GestureDetector(
                                 onTap: () {
-                                  isliked = !isliked;
-                                  _like(post.id, post.authorId);
+                                  setState(() {
+                                    _toggleLike(post.id);
+                                  });
                                 },
                                 child: Icon(
-                                  isliked
+                                  post.isLiked
                                       ? Icons.thumb_up_alt_rounded
                                       : Icons.thumb_up_off_alt,
+                                  color:
+                                      post.isLiked ? Colors.blue : Colors.grey,
                                 ),
                               ),
-                              FutureBuilder<int>(
-                                future: _liked(post.id),
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.waiting) {
-                                    return const Text("...");
-                                  } else if (snapshot.hasError) {
-                                    return const Text("Error");
-                                  } else {
-                                    return Text(snapshot.data.toString());
-                                  }
-                                },
-                              ),
+                              const SizedBox(width: 5),
+                              Text(post.likeCount.toString()),
                             ],
-                          )
+                          ),
                         ],
                       ),
                     ),

@@ -1,38 +1,34 @@
-class Modelpost {
+class ModelPost {
   final String id;
-  final String authorId;
+  final String title;
   final String content;
   final String imageUrl;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final String visibility;
-  final String title;
+  final String authorId;
   final String displayName;
+  final int likeCount;
+  final bool isLiked;
 
-  Modelpost({
+  ModelPost({
     required this.id,
-    required this.authorId,
+    required this.title,
     required this.content,
     required this.imageUrl,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.visibility,
-    required this.title,
+    required this.authorId,
     required this.displayName,
+    required this.likeCount,
+    required this.isLiked,
   });
 
-  factory Modelpost.fromJson(Map<String, dynamic> json) {
-    return Modelpost(
-      id: json['id'] ?? '',
-      authorId: json['author_id'] ?? '',
-      content: json['content'] ?? '',
+  factory ModelPost.fromJson(Map<String, dynamic> json) {
+    return ModelPost(
+      id: json['id'],
+      title: json['title'],
+      content: json['content'],
       imageUrl: json['image_url'] ?? '',
-      createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
-      updatedAt: DateTime.tryParse(json['updated_at'] ?? '') ?? DateTime.now(),
-      visibility: json['visibility'] ?? 'public',
-      title: json['title'] ?? '',
-      displayName:
-          json['display_name'] ?? "", // Ensures displayName is always a String
+      authorId: json['author_id'],
+      displayName: json['profiles']?['display_name'] ?? 'Unknown',
+      likeCount: json['likes']?.length ?? 0, // Count likes
+      isLiked: json['isLiked'] ?? false, // Default to false
     );
   }
 }
