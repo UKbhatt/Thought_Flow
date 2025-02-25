@@ -9,6 +9,7 @@ import 'package:thoughtflow/Screens/Splashscreen.dart';
 import 'package:thoughtflow/provider/provider.dart';
 import 'package:provider/provider.dart';
 
+
 void main() async {
   await dotenv.load(fileName: '.env');
   WidgetsFlutterBinding.ensureInitialized();
