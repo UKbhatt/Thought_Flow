@@ -21,14 +21,18 @@ class ModelPost {
 
   factory ModelPost.fromJson(Map<String, dynamic> json) {
     return ModelPost(
-      id: json['id'],
-      title: json['title'],
-      content: json['content'],
+      id: json['id'].toString(),
+      title: json['title'] ?? 'No Title',
+      content: json['content'] ?? 'No Content',
       imageUrl: json['image_url'] ?? '',
-      authorId: json['author_id'],
-      displayName: json['profiles']?['display_name'] ?? 'Unknown',
-      likeCount: json['likes']?.length ?? 0, // Count likes
-      isLiked: json['isLiked'] ?? false, // Default to false
+      authorId: json['author_id'] ?? '',
+      displayName: json['profiles'] != null
+          ? json['profiles']['display_name'] ?? 'Unknown'
+          : 'Unknown', // ✅ Fix null issue
+      likeCount: (json['likes'] != null)
+          ? (json['likes'] as List).length
+          : 0, // ✅ Count likes
+      isLiked: json['isLiked'] ?? false, // ✅ Ensure default value
     );
   }
 }
