@@ -1,0 +1,73 @@
+-- Enable extensions required for RLS policies
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Profiles table
+CREATE TABLE profiles (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    display_name TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- Posts table
+CREATE TABLE posts (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    author_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+    image_url TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    last_edited_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    visibility TEXT CHECK (visibility IN ('private', 'public')) DEFAULT 'public',
+    title TEXT NOT NULL,
+    content TEXT NOT NULL
+);
+
+-- Likes table
+CREATE TABLE likes (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    post_id UUID REFERENCES posts(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+    UNIQUE(post_id, user_id) -- Ensures a user can like a post only once
+);
+
+-- Enable Row-Level Security (RLS)
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE likes ENABLE ROW LEVEL SECURITY;
+
+-- Profiles table policies
+CREATE POLICY "Users can view their own profile" ON profiles
+    FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Users can insert their own profile" ON profiles
+    FOR INSERT WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "Users can update their own profile" ON profiles
+    FOR UPDATE USING (auth.uid() = id);
+
+-- Posts table policies
+CREATE POLICY "Public posts are viewable by anyone" ON posts
+    FOR SELECT USING (visibility = 'public');
+
+CREATE POLICY "Users can view their own posts" ON posts
+    FOR SELECT USING (auth.uid() = author_id);
+
+CREATE POLICY "Users can insert their own posts" ON posts
+    FOR INSERT WITH CHECK (auth.uid() = author_id);
+
+CREATE POLICY "Users can update their own posts" ON posts
+    FOR UPDATE USING (auth.uid() = author_id);
+
+CREATE POLICY "Users can delete their own posts" ON posts
+    FOR DELETE USING (auth.uid() = author_id);
+
+-- Likes table policies
+CREATE POLICY "Users can like posts" ON likes
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can unlike their own likes" ON likes
+    FOR DELETE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can view likes on public posts" ON likes
+    FOR SELECT USING (EXISTS (SELECT 1 FROM posts WHERE posts.id = likes.post_id AND posts.visibility = 'public'));
+
+CREATE POLICY "Users can view likes on their own posts" ON likes
+    FOR SELECT USING (auth.uid() = (SELECT author_id FROM posts WHERE posts.id = likes.post_id));

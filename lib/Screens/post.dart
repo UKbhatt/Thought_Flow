@@ -70,7 +70,7 @@ class _PostState extends State<Post> {
 
       request.fields['post_text'] = _contentController.text;
       request.fields['post_title'] = _titleController.text;
-      request.fields['id'] = userid ?? '';
+      request.fields['userId'] = userid ?? '';
       request.fields['visible'] = "public";
 
       var response = await request.send();
@@ -78,7 +78,7 @@ class _PostState extends State<Post> {
       var responseBody = await response.stream.bytesToString();
 
       if (response.statusCode == 201) {
-        // print("✅ Post uploaded successfully: $responseBody");
+        print("✅ Post uploaded successfully: $responseBody");
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Post uploaded successfully")),
         );

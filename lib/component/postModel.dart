@@ -27,7 +27,7 @@ class ModelPost {
       imageUrl: json['image_url'] ?? '',
       authorId: json['author_id'],
       displayName: json['display_name'] ?? 'Unknown',
-      likeCount: json['likes']?.length ?? 0,
+      likeCount: json['like_count'] ?? 0,
       isLiked: json['isLiked'] ?? false,
     );
   }

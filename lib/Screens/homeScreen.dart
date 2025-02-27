@@ -14,17 +14,32 @@ class Homescreen extends StatefulWidget {
 
 class _HomescreenState extends State<Homescreen> {
   late Future<List<ModelPost>> postsFuture;
-  late String url;
+  late String Url = ' ${dotenv.env['Url']}/post';
+
+  Future<void> _like() async {
+    try {
+      final url = '$Url/like';
+      final response = await http.post(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        print(response.body);
+      } else {
+        throw Exception('Error liking post: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("Error occured: $e");
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    url = '${dotenv.env['Url']}/post/getPosts'; // Ensure URL is loaded
     postsFuture = _getPosts();
   }
 
   Future<List<ModelPost>> _getPosts() async {
     try {
+      final url = '$Url/getPosts';
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
@@ -95,7 +110,6 @@ class _HomescreenState extends State<Homescreen> {
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(child: Text("No posts found"));
           }
-
           List<ModelPost> posts = snapshot.data!;
 
           return RefreshIndicator(
@@ -105,7 +119,7 @@ class _HomescreenState extends State<Homescreen> {
             child: Stack(
               children: [
                 Container(
-                  color: const Color.fromARGB(255, 100, 132, 158),
+                  color: const Color.fromARGB(255, 104, 140, 169),
                 ),
                 ListView.builder(
                   itemCount: posts.length,
@@ -145,6 +159,27 @@ class _HomescreenState extends State<Homescreen> {
                                 const SizedBox(height: 10),
                                 Text(post.content,
                                     style: const TextStyle(fontSize: 18)),
+                                const SizedBox(height: 10),
+                                Row(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () => _like(),
+                                      child: Icon(
+                                          post.isLiked
+                                              ? Icons.favorite
+                                              : Icons.favorite_border,
+                                          color: Colors.red),
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      post.likeCount.toString(),
+                                      style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.redAccent),
+                                    ),
+                                  ],
+                                ),
                               ],
                             ),
                           ),
