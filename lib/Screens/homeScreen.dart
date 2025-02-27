@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'package:thoughtflow/provider/provider.dart';
 import '../component/postModel.dart';
 
 class Homescreen extends StatefulWidget {
@@ -14,33 +16,65 @@ class Homescreen extends StatefulWidget {
 
 class _HomescreenState extends State<Homescreen> {
   late Future<List<ModelPost>> postsFuture;
-  late String Url = ' ${dotenv.env['Url']}/post';
+  late String Url = '${dotenv.env['Url']}/post';
+  late String userid;
 
-  Future<void> _like() async {
+  Future<void> _like(String postId, bool isLiked, int index) async {
     try {
       final url = '$Url/like';
-      final response = await http.post(Uri.parse(url));
+      final userId = Provider.of<UserProvider>(context, listen: false).userId!;
+
+      setState(() {
+        postsFuture.then((posts) {
+          posts[index].isLiked = !isLiked;
+          posts[index].likeCount += isLiked ? -1 : 1;
+        });
+      });
+
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"post_id": postId, "user_id": userId}),
+      );
 
       if (response.statusCode == 200) {
-        print(response.body);
+        final resData = jsonDecode(response.body);
+
+        setState(() {
+          postsFuture.then((posts) {
+            posts[index].isLiked = resData["isLiked"];
+            posts[index].likeCount = resData["likeCount"];
+          });
+        });
       } else {
-        throw Exception('Error liking post: ${response.statusCode}');
+        throw Exception("Error liking post: ${response.statusCode}");
       }
     } catch (e) {
-      print("Error occured: $e");
+      print("Error: $e");
+
+      setState(() {
+        postsFuture.then((posts) {
+          posts[index].isLiked = isLiked;
+          posts[index].likeCount += isLiked ? 1 : -1;
+        });
+      });
     }
   }
 
   @override
   void initState() {
     super.initState();
+
     postsFuture = _getPosts();
   }
 
   Future<List<ModelPost>> _getPosts() async {
     try {
       final url = '$Url/getPosts';
-      final response = await http.get(Uri.parse(url));
+      userid = Provider.of<UserProvider>(context, listen: false).userId!;
+      final response = await http.get(
+        Uri.parse('$url?userid=$userid'),
+      );
 
       if (response.statusCode == 200) {
         final res = jsonDecode(response.body);
@@ -163,20 +197,23 @@ class _HomescreenState extends State<Homescreen> {
                                 Row(
                                   children: [
                                     GestureDetector(
-                                      onTap: () => _like(),
+                                      onTap: () => _like(post.id, post.isLiked,
+                                          post.likeCount),
                                       child: Icon(
-                                          post.isLiked
-                                              ? Icons.favorite
-                                              : Icons.favorite_border,
-                                          color: Colors.red),
+                                        post.isLiked
+                                            ? Icons.favorite
+                                            : Icons.favorite_border,
+                                        color: Colors.red,
+                                      ),
                                     ),
                                     const SizedBox(width: 5),
                                     Text(
                                       post.likeCount.toString(),
                                       style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.redAccent),
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.redAccent,
+                                      ),
                                     ),
                                   ],
                                 ),

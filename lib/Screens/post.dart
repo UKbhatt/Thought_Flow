@@ -78,7 +78,7 @@ class _PostState extends State<Post> {
       var responseBody = await response.stream.bytesToString();
 
       if (response.statusCode == 201) {
-        print("✅ Post uploaded successfully: $responseBody");
+        // print("Post uploaded successfully: $responseBody");
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Post uploaded successfully")),
         );
