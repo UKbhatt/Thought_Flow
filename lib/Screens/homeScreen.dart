@@ -124,111 +124,108 @@ class _HomescreenState extends State<Homescreen> {
                   color: Colors.white,
                 )),
           ),
-          IconButton(
-            icon: const Icon(
-              Icons.refresh,
-              color: Colors.white,
-            ),
-            onPressed: reloadPosts,
-          ),
+          
         ],
         backgroundColor: const Color.fromARGB(255, 98, 151, 243),
       ),
-      body: FutureBuilder<List<ModelPost>>(
-        future: postsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text("Error: ${snapshot.error}"));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("No posts found"));
-          }
-          List<ModelPost> posts = snapshot.data!;
+      body: RefreshIndicator(
+        onRefresh: () async => reloadPosts(),
+        child: FutureBuilder<List<ModelPost>>(
+          future: postsFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text("Error: ${snapshot.error}"));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(child: Text("No posts found"));
+            }
+            List<ModelPost> posts = snapshot.data!;
 
-          return RefreshIndicator(
-            onRefresh: () async {
-              reloadPosts();
-            },
-            child: Stack(
-              children: [
-                Container(
-                  color: const Color.fromARGB(255, 104, 140, 169),
-                ),
-                ListView.builder(
-                  itemCount: posts.length,
-                  itemBuilder: (context, index) {
-                    final post = posts[index];
-                    return Card(
-                      margin: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: double.infinity,
-                            height: 200,
-                            decoration: BoxDecoration(
-                              image: DecorationImage(
-                                image: NetworkImage(post.imageUrl),
-                                fit: BoxFit.cover,
+            return RefreshIndicator(
+              onRefresh: () async {
+                reloadPosts();
+              },
+              child: Stack(
+                children: [
+                  Container(
+                    color: const Color.fromARGB(255, 104, 140, 169),
+                  ),
+                  ListView.builder(
+                    itemCount: posts.length,
+                    itemBuilder: (context, index) {
+                      final post = posts[index];
+                      return Card(
+                        margin: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: double.infinity,
+                              height: 200,
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: NetworkImage(post.imageUrl),
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  post.title,
-                                  style: const TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 5),
-                                Text(
-                                  "Uploaded By: ${post.displayName.isNotEmpty ? post.displayName : 'Unknown'}",
-                                  style: const TextStyle(color: Colors.grey),
-                                ),
-                                const SizedBox(height: 10),
-                                Text(post.content,
-                                    style: const TextStyle(fontSize: 18)),
-                                const SizedBox(height: 10),
-                                Row(
-                                  children: [
-                                    GestureDetector(
-                                      onTap: () => _like(post.id, post.isLiked,
-                                          post.likeCount),
-                                      child: Icon(
-                                        post.isLiked
-                                            ? Icons.favorite
-                                            : Icons.favorite_border,
-                                        color: Colors.red,
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    post.title,
+                                    style: const TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 5),
+                                  Text(
+                                    "Uploaded By: ${post.displayName.isNotEmpty ? post.displayName : 'Unknown'}",
+                                    style: const TextStyle(color: Colors.grey),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text(post.content,
+                                      style: const TextStyle(fontSize: 18)),
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () => _like(post.id,
+                                            post.isLiked, post.likeCount),
+                                        child: Icon(
+                                          post.isLiked
+                                              ? Icons.favorite
+                                              : Icons.favorite_border,
+                                          color: Colors.red,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 5),
-                                    Text(
-                                      post.likeCount.toString(),
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.redAccent,
+                                      const SizedBox(width: 5),
+                                      Text(
+                                        post.likeCount.toString(),
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.redAccent,
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                )
-              ],
-            ),
-          );
-        },
+                          ],
+                        ),
+                      );
+                    },
+                  )
+                ],
+              ),
+            );
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.pushNamed(context, "/post"),

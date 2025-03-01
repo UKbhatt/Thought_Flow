@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../component/imagepicker.dart';
 import 'package:http/http.dart' as http;
@@ -78,14 +79,11 @@ class _PostState extends State<Post> {
       var responseBody = await response.stream.bytesToString();
 
       if (response.statusCode == 201) {
-        // print("Post uploaded successfully: $responseBody");
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Post uploaded successfully")),
         );
         Navigator.pushNamed(context, "/home");
       } else {
-        // print(" Failed to upload. Status: ${response.statusCode}");
-        // print("Response Body: $responseBody");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Failed to upload: $responseBody")),
         );
@@ -94,26 +92,49 @@ class _PostState extends State<Post> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: $e")),
       );
-      // print("Upload Error: $e");
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final height = MediaQuery.of(context).size.height;
+    final width = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Create Post"),
+        title: const Text("Dashboard"),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_sharp),
+          onPressed: () => Navigator.pushNamed(context, '/home'),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.done_all),
+            onPressed: _upload,
+            color: Colors.green,
+          ),
+        ],
         centerTitle: true,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(10.0),
         child: Column(
           children: [
+            Align(
+              alignment: Alignment.topLeft,
+              child: Text(
+                "Create Post",
+                style: GoogleFonts.workSans(
+                    fontWeight: FontWeight.bold, fontSize: 35),
+              ),
+            ),
+            const SizedBox(
+              height: 20,
+            ),
             TextFormField(
               controller: _titleController,
               style: const TextStyle(color: Colors.black),
               decoration: InputDecoration(
-                labelText: "Title",
+                labelText: "Post Title",
                 labelStyle:
                     const TextStyle(color: Color.fromARGB(255, 100, 95, 95)),
                 prefixIcon: const Icon(Icons.title, color: Colors.black),
@@ -128,7 +149,7 @@ class _PostState extends State<Post> {
               controller: _contentController,
               style: const TextStyle(color: Colors.black),
               decoration: InputDecoration(
-                labelText: "What's on your Mind?",
+                labelText: "Description",
                 labelStyle:
                     const TextStyle(color: Color.fromARGB(255, 100, 95, 95)),
                 prefixIcon:
@@ -140,16 +161,21 @@ class _PostState extends State<Post> {
               ),
             ),
             const SizedBox(height: 20),
-            _image != null
-                ? Image.file(_image!, height: 100)
-                : const Text("No image selected"),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.image),
-              onPressed: _chooseImage,
-              label: const Text("Pick Image"),
+            InkWell(
+              onTap: _chooseImage,
+              child: _image != null
+                  ? Image.file(
+                      _image!,
+                      height: height * 0.4,
+                      width: width * 0.4,
+                      fit: BoxFit.cover,
+                    )
+                  : const Icon(
+                      Icons.add_a_photo_rounded,
+                      size: 100,
+                      color: Colors.grey,
+                    ),
             ),
-            ElevatedButton(onPressed: _upload, child: const Text("Upload")),
           ],
         ),
       ),
