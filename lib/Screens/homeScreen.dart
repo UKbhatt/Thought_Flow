@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -64,7 +65,6 @@ class _HomescreenState extends State<Homescreen> {
   @override
   void initState() {
     super.initState();
-
     postsFuture = _getPosts();
   }
 
@@ -72,13 +72,15 @@ class _HomescreenState extends State<Homescreen> {
     try {
       final url = '$Url/getPosts';
       userid = Provider.of<UserProvider>(context, listen: false).userId!;
-      final response = await http.get(
-        Uri.parse('$url?userid=$userid'),
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"user_id": userid}),
       );
 
       if (response.statusCode == 200) {
+        print("response: ${response.body}");
         final res = jsonDecode(response.body);
-        print(res);
 
         if (res['data'] is List) {
           List<ModelPost> posts = (res['data'] as List)
@@ -108,6 +110,10 @@ class _HomescreenState extends State<Homescreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios),
+        ),
         centerTitle: true,
         title: Text("Though Flow",
             style: GoogleFonts.tiroKannada(
@@ -115,16 +121,16 @@ class _HomescreenState extends State<Homescreen> {
                 color: Colors.white,
                 fontWeight: FontWeight.bold)),
         actions: [
+          IconButton(onPressed: reloadPosts, icon: Icon(Icons.refresh)),
           Padding(
             padding: const EdgeInsets.only(right: 10.0),
             child: GestureDetector(
-                onTap: () {},
+                onTap: () => Navigator.pushNamed(context, '/profile'),
                 child: const Icon(
                   Icons.person,
                   color: Colors.white,
                 )),
           ),
-          
         ],
         backgroundColor: const Color.fromARGB(255, 98, 151, 243),
       ),

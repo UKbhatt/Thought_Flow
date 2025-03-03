@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../component/imagepicker.dart';
+import '../component/imageGallery.dart';
 import 'package:http/http.dart' as http;
 import '../provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
