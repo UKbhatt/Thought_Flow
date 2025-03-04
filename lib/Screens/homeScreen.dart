@@ -121,7 +121,6 @@ class _HomescreenState extends State<Homescreen> {
                 color: Colors.white,
                 fontWeight: FontWeight.bold)),
         actions: [
-          IconButton(onPressed: reloadPosts, icon: Icon(Icons.refresh)),
           Padding(
             padding: const EdgeInsets.only(right: 10.0),
             child: GestureDetector(

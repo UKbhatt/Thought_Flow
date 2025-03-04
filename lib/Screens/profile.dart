@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:http_parser/http_parser.dart';
@@ -10,6 +8,8 @@ import '../component/imageGallery.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:path/path.dart' as path;
+import 'dart:convert';
+import 'dart:io';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -55,7 +55,6 @@ class _ProfileState extends State<Profile> {
     if (_image == null) {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Please select an image")));
-      return;
     } else {
       final String url = "${dotenv.env['Url']}/Profile/PostImage";
       final userid = Provider.of<UserProvider>(context, listen: false).userId;
@@ -162,10 +161,6 @@ class _ProfileState extends State<Profile> {
                       ),
                     ),
                   ),
-            Container(
-              width: double.infinity,
-              color: Colors.white,
-            )
           ],
         ));
   }
